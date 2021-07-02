@@ -2,6 +2,7 @@
 from flask import Flask, json, request, jsonify
 from datetime import datetime
 import bcrypt
+import jwt
 from flask_sqlalchemy import SQLAlchemy , sqlalchemy
 from sqlalchemy.exc import IntegrityError
 from flask_marshmallow import Marshmallow 
@@ -81,7 +82,8 @@ def login():
         password = request.json['password']
         hashed_password = user.password
         if bcrypt.checkpw(password.encode('utf-8'), hashed_password):
-            return jsonify({'message':'successful'}), 201
+            token = jwt.encode({"id": user.id}, os.environ['SECRET'], algorithm="HS256")
+            return jsonify({'token':token}), 201
         else:
             return jsonify({'error':'password incorrect'}), 401
     else:
