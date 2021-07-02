@@ -1,6 +1,5 @@
 
-from enum import unique
-from flask import Flask, request, jsonify
+from flask import Flask, json, request, jsonify
 from datetime import datetime
 import bcrypt
 from flask_sqlalchemy import SQLAlchemy , sqlalchemy
@@ -58,8 +57,7 @@ class UserSchema(ma.Schema):
 # Init schema
 file_schema = FileSchema()
 files_schema = FileSchema(many=True)
-
-user_schema = FileSchema()
+user_schema = UserSchema()
 
 
 @app.route('/api/signup', methods=['POST'])
@@ -67,14 +65,27 @@ def signup():
     try:
         username = request.json['username']
         password = request.json['password']
-        hashed_password = bcrypt.hashpw(password.encode('utf8'), bcrypt.gensalt())
+        hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
         new_user = User(username, hashed_password)
         db.session.add(new_user)
         db.session.commit()
-        return user_schema.jsonify(new_user)
+        return user_schema.jsonify(new_user), 201
     except IntegrityError:
-        return jsonify({'error':'User Already Exists'})
+        return jsonify({'error':'User Already Exists'}), 401
 
+@app.route('/api/login', methods=['POST'])
+def login():
+    username = request.json['username']
+    user = User.query.filter_by(username=username).first() 
+    if user is not None:
+        password = request.json['password']
+        hashed_password = user.password
+        if bcrypt.checkpw(password.encode('utf-8'), hashed_password):
+            return jsonify({'message':'successful'}), 201
+        else:
+            return jsonify({'error':'password incorrect'}), 401
+    else:
+        return jsonify('error', 'user doesnt exist'), 404
 
 # Run Server
 if __name__ == '__main__':
