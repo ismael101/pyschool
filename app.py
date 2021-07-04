@@ -1,62 +1,33 @@
-from flask import Flask, request, jsonify
-from sqlalchemy.exc import IntegrityError
-from models import User, File, session
+from flask import Flask
+from auth import auth
+from file import file
 from flask_marshmallow import Marshmallow 
-import bcrypt
-import jwt
-import os
 
 
 # Init app
 app = Flask(__name__)
-basedir = os.path.abspath(os.path.dirname(__file__))
+app.register_blueprint(auth)
+app.register_blueprint(file)
 
-# Init ma
-ma = Marshmallow(app)
+# basedir = os.path.abspath(os.path.dirname(__file__))
 
-# Product Schema
-class FileSchema(ma.Schema):
-  class Meta:
-    fields = ('id', 'name',  'size', 'created')
+# # Init ma
+# ma = Marshmallow(app)
 
-class UserSchema(ma.Schema):
-  class Meta:
-    fields = ('id', 'username',  'password')
+# # Product Schema
+# class FileSchema(ma.Schema):
+#   class Meta:
+#     fields = ('id', 'name',  'size', 'created')
 
-
-# Init schema
-file_schema = FileSchema()
-files_schema = FileSchema(many=True)
-user_schema = UserSchema()
+# class UserSchema(ma.Schema):
+#   class Meta:
+#     fields = ('id', 'username',  'password')
 
 
-@app.route('/api/signup', methods=['POST'])
-def signup():
-    try:
-        username = request.json['username']
-        password = request.json['password']
-        hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
-        new_user = User(username=username, password=hashed_password.decode('utf-8'))
-        session.add(new_user)
-        session.commit()
-        return jsonify('user succesfully created'), 201
-    except IntegrityError:
-        return jsonify({'error':'user already exists'}), 401
-
-@app.route('/api/login', methods=['POST'])
-def login():
-    username = request.json['username']
-    user = session.query(User).filter_by(username=username).first() 
-    if user is not None:
-        password = request.json['password']
-        hashed_password = user.password
-        if bcrypt.checkpw(password.encode('utf-8'), hashed_password.encode('utf-8')):
-            token = jwt.encode({'id': user.id.hex}, os.environ['SECRET'], algorithm='HS256')
-            return jsonify({'token':token}), 201
-        else:
-            return jsonify({'error':'password incorrect'}), 401
-    else:
-        return jsonify('error', 'user doesnt exist'), 404
+# # Init schema
+# file_schema = FileSchema()
+# files_schema = FileSchema(many=True)
+# user_schema = UserSchema()
 
 # Run Server
 if __name__ == '__main__':
