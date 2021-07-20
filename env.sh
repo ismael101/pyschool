@@ -1,0 +1,7 @@
+export SECRET='wdcoknw0ed9320m3slksmwsxr'
+export DB='postgresql://localhost/postgres'
+export USERNAME='ismael101'
+export PASSWORD='password101'
+export FIRST='ismael'
+export LAST='mohamed'
+export EMAIL='ismaelomermohamed@gmail.com'
