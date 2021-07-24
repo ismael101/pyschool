@@ -10,12 +10,12 @@ import os
 Base = declarative_base()
 metadata = Base.metadata
 
-class Level(enum.Enum):
+class Role(enum.Enum):
     ADMIN = 'ADMIN'
     TEACHER = 'TEACHER'
     STUDENT = 'STUDENT'
 
-class Type(enum.Enum):
+class Module(enum.Enum):
     HOMEWORK = 'HOMEWORK'
     QUIZ = 'QUIZ'
     PROJECT = 'PROJECT'
@@ -27,7 +27,7 @@ class Register(Base):
     firstname = Column(String(255), nullable=False)
     lastname = Column(String(255), nullable=False)
     email = Column(String(255), nullable=False, unique=True)
-    kind = Column(ENUM(Level), nullable=False)
+    role = Column(ENUM(Role), nullable=False)
 
 class Users(Base):
     __tablename__ = 'users'
@@ -52,7 +52,7 @@ class Classlist(Base):
 class Modules(Base):
     __tablename__ = 'modules'
     id = Column(Integer, primary_key=True)
-    kind = Column(ENUM(Type), nullable=False)  
+    module = Column(ENUM(Module), nullable=False)  
     class_id = Column(Integer, ForeignKey('classes.id', ondelete='CASCADE'), nullable=False)
 
 class Grades(Base):

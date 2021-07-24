@@ -13,15 +13,15 @@ basedir = os.path.abspath(os.path.dirname(__file__))
 @auth.route('/signup', methods=['POST'])
 def signup():
     try:
-        first_name = request.json['first_name']
-        last_name  = request.json['last_name']
+        firstname = request.json['firstname']
+        lastname  = request.json['lastname']
         email = request.json['email']
-        registered_user = session.query(Register).filter_by(first_name=first_name, last_name=last_name, email=email).first()
+        registered_user = session.query(Register).filter_by(firstname=firstname, lastname=lastname, email=email).first()
         if registered_user is not None:
             username = request.json['username']
             password = request.json['password']
-            hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
-            new_user = Users(username=username, password=hashed_password.decode('utf-8'))
+            hashed_password = bcrypt.hashpw(password.encode('utf8'), bcrypt.gensalt())
+            new_user = Users(username=username, password=hashed_password.decode('utf8'))
             session.add(new_user)
             session.commit()
             return jsonify('user succesfully created'), 201
@@ -37,7 +37,7 @@ def login():
     if user is not None:
         password = request.json['password']
         hashed_password = user.password
-        if bcrypt.checkpw(password.encode('utf-8'), hashed_password.encode('utf-8')):
+        if bcrypt.checkpw(str(password).encode('utf8'), hashed_password.encode('utf8')):
             token = jwt.encode({'id': f'{user.id}',"exp": datetime.datetime.utcnow() + datetime.timedelta(hours=2)}, os.environ['SECRET'], algorithm='HS256')
             return jsonify({'token':token}), 201
         else:
