@@ -1,14 +1,13 @@
 from flask import Blueprint, request, jsonify
-import datetime
 from sqlalchemy.exc import IntegrityError
 from models import Users, Register, session
 from functools import wraps
+import datetime
 import bcrypt
 import jwt
 import os
 
 auth = Blueprint('auth' ,__name__, url_prefix='/api')
-basedir = os.path.abspath(os.path.dirname(__file__))
 
 @auth.route('/signup', methods=['POST'])
 def signup():
@@ -16,8 +15,8 @@ def signup():
         firstname = request.json['firstname']
         lastname  = request.json['lastname']
         email = request.json['email']
-        registered_user = session.query(Register).filter_by(firstname=firstname, lastname=lastname, email=email).first()
-        if registered_user is not None:
+        register = session.query(Register).filter_by(firstname=firstname, lastname=lastname, email=email).first()
+        if register is not None:
             username = request.json['username']
             password = request.json['password']
             hashed_password = bcrypt.hashpw(password.encode('utf8'), bcrypt.gensalt())
@@ -57,10 +56,10 @@ def token_required(f):
         try:
             data = jwt.decode(token, os.environ['SECRET'], algorithms=["HS256"])
             current_user = session.query(Users).get(data['id'])
-            level = session.query(Register).get(current_user.register_id)
+            register = session.query(Register).get(current_user.register_id)
             if current_user is None:
                 return jsonify({'error':'user doesnt exist'}), 400
         except:
             return jsonify({'error' : 'token invalid'}), 401
-        return  f(current_user, level, *args, **kwargs)
+        return  f(current_user, register.role, *args, **kwargs)
     return decorated
