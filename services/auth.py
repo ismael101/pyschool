@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify
 from sqlalchemy.exc import IntegrityError
-from models import Users, Register, session
+from models import Users, Registery, session
 from functools import wraps
 import datetime
 import bcrypt
@@ -15,7 +15,7 @@ def signup():
         firstname = request.json['firstname']
         lastname  = request.json['lastname']
         email = request.json['email']
-        register = session.query(Register).filter_by(firstname=firstname, lastname=lastname, email=email).first()
+        register = session.query(Registery).filter_by(firstname=firstname, lastname=lastname, email=email).first()
         if register is not None:
             username = request.json['username']
             password = request.json['password']
@@ -56,7 +56,7 @@ def token_required(f):
         try:
             data = jwt.decode(token, os.environ['SECRET'], algorithms=["HS256"])
             current_user = session.query(Users).get(data['id'])
-            register = session.query(Register).get(current_user.register_id)
+            register = session.query(Registery).get(current_user.register_id)
             if current_user is None:
                 return jsonify({'error':'user doesnt exist'}), 400
         except:
