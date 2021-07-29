@@ -21,11 +21,19 @@ class Module(enum.Enum):
     PROJECT = 'PROJECT'
     TEST = 'TEST'
 
-class Register(Base):
-    __tablename__ = 'register'
+class Subject(enum.Enum):
+    MATH = 'MATH'
+    LANGUAGE = 'LANGUAGE'
+    SCIENCE = 'SCIENCE'
+    TECHNOLOGY = 'TECHNOLOGY'
+    ENGINEERING = 'ENGINEERING'
+    HUMANITIES = 'HUMANITIES'
+
+class Registery(Base):
+    __tablename__ = 'registery'
     id = Column(Integer, primary_key=True)
-    firstname = Column(String(255), nullable=False)
-    lastname = Column(String(255), nullable=False)
+    first = Column(String(255), nullable=False)
+    last = Column(String(255), nullable=False)
     email = Column(String(255), nullable=False, unique=True)
     role = Column(ENUM(Role), nullable=False)
 
@@ -34,33 +42,34 @@ class Users(Base):
     id = Column(Integer, primary_key=True)
     username = Column(String(255), nullable=False, unique=True)
     password = Column(String(255), nullable=False)
-    register_id = Column(Integer, ForeignKey('register.id', ondelete='CASCADE'), nullable=False, unique=True)
+    register = Column(Integer, ForeignKey('registery.id', ondelete='CASCADE'), nullable=False, unique=True)
 
-class Classes(Base):
-    __tablename__ = 'classes'
+class Course(Base):
+    __tablename__ = 'course'
     id = Column(Integer, primary_key=True)
-    name = Column(String(255), nullable=False)
-    credit = Column(Float, nullable=False)
-    teacher = Column(Integer, ForeignKey('users.id'), nullable=False)
+    title = Column(String(255), nullable=False, unique=True)
+    subject = Column(ENUM(Subject), nullable=False) 
+    credit = Column(Integer, nullable=False)
+    teacher = Column(Integer, ForeignKey('registery.id'), nullable=False)
 
 class Classlist(Base):
     __tablename__ = 'classlist'
     id = Column(Integer, primary_key=True)
-    class_id =  Column(Integer, ForeignKey('classes.id', ondelete='CASCADE'))
-    student_id = Column(Integer, ForeignKey('users.id', ondelete='CASCADE'))
+    course =  Column(Integer, ForeignKey('course.id', ondelete='CASCADE'))
+    student = Column(Integer, ForeignKey('registery.id', ondelete='CASCADE'))
 
 class Modules(Base):
     __tablename__ = 'modules'
     id = Column(Integer, primary_key=True)
     module = Column(ENUM(Module), nullable=False)  
-    class_id = Column(Integer, ForeignKey('classes.id', ondelete='CASCADE'), nullable=False)
+    course = Column(Integer, ForeignKey('course.id', ondelete='CASCADE'), nullable=False)
 
 class Grades(Base):
     __tablename__ = 'grades'
     id = Column(Integer, primary_key=True)
     grade = Column(String(255), nullable=False)  
-    module_id = Column(Integer, ForeignKey('modules.id', ondelete='CASCADE'), nullable=False)
-    student_id = Column(Integer, ForeignKey('users.id', ondelete='CASCADE'), nullable=False)
+    module = Column(Integer, ForeignKey('modules.id', ondelete='CASCADE'), nullable=False)
+    student = Column(Integer, ForeignKey('registery.id', ondelete='CASCADE'), nullable=False)
 
 engine = create_engine(os.environ['DB'], echo=False)
 Session = sessionmaker(bind=engine)
